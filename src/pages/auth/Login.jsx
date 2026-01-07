@@ -1,147 +1,307 @@
-// src/pages/Login.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Store, Mail, Lock, ArrowRight, ShieldCheck, TrendingUp, Package, Users, Smartphone, CheckCircle, BarChart3, ShoppingBag, LayoutDashboard } from 'lucide-react';
+import axios from 'axios';
+import Base_URL from '../../context/Base_Url'
+import { toast } from 'react-toastify';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  CreditCard,
+  Store,
+  LogIn
+} from 'lucide-react';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Demo login
-    onLogin();
-    navigate('/dashboard');
+  // Focus first input on mount
+  useEffect(() => {
+    setTimeout(() => emailRef.current?.focus(), 100);
+  }, []);
+
+  // Real-time validation
+  useEffect(() => {
+    const newErrors = {};
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    if (password && password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+  }, [email, password]);
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const features = [
-    { icon: <TrendingUp size={20} />, text: 'Real-time Analytics' },
-    { icon: <Package size={20} />, text: 'Inventory Management' },
-    { icon: <Users size={20} />, text: 'Customer Tracking' },
-    { icon: <Smartphone size={20} />, text: 'Mobile Friendly' },
-  ];
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${Base_URL}/api/auth/login`, {
+        email,
+        password
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.data.success) {
+        toast.success('Login successful!');
+        const token = response.data.token;
+        const user = response.data.user;
+        onLogin(token, user);
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else {
+        toast.error(response.data.message || 'Login failed');
+      }
+
+    } catch (error) {
+      const message = error.response?.data?.message || error.response?.data?.error || 'Server Error';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyDown = (e, nextRef) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (nextRef) {
+        nextRef.current?.focus();
+      } else if (email && password) {
+        handleSubmit(e);
+      }
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-white antialiased">
+      {/* LEFT SIDE: FORM */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-10 bg-white">
+        <div className="w-full max-w-md">
 
-      {/* LEFT SIDE - Sharp & Minimal Form */}
-      <div className="w-full md:w-1/2 lg:w-5/12 flex items-center justify-center p-8 md:p-12 lg:p-20">
-        <div className="w-full max-w-sm">
-          <div className="mb-12">
-            <h2 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">Login</h2>
-            <p className="text-gray-500 font-medium">Welcome back! Please enter your details.</p>
+          {/* Header */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+            <p className="text-sm text-gray-500">
+              Sign in to your account to continue
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-8 pr-4 py-3 border-b-2 border-gray-100 focus:border-primary outline-none transition-all bg-transparent placeholder-gray-300 text-gray-700"
-                  placeholder="name@company.com"
-                  required
-                />
-              </div>
+          {/* FORM */}
+          <div>
+            {/* Email */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="flex items-center gap-2">
+                  <Mail size={16} className="text-gray-500" />
+                  Email Address
+                </div>
+              </label>
+              <input
+                ref={emailRef}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, passwordRef)}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.email
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
+                    : 'border-gray-300 focus:border-[#DC143C] focus:ring-[#DC143C]/20'
+                  }`}
+                placeholder="you@example.com"
+              />
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
+            {/* Password */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="flex items-center gap-2">
+                  <Lock size={16} className="text-gray-500" />
+                  Password
+                </div>
+              </label>
               <div className="relative">
-                <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
                 <input
-                  type="password"
+                  ref={passwordRef}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-8 pr-4 py-3 border-b-2 border-gray-100 focus:border-primary outline-none transition-all bg-transparent placeholder-gray-300 text-gray-700"
-                  placeholder="••••••••"
-                  required
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && email && password) {
+                      handleSubmit(e);
+                    }
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.password
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
+                      : 'border-gray-300 focus:border-[#DC143C] focus:ring-[#DC143C]/20'
+                    }`}
+                  placeholder="••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
+              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+              {password && (
+                <p className={`mt-1 text-xs ${password.length >= 6 ? 'text-green-600' : 'text-red-600'}`}>
+                  {password.length >= 6 ? '' : `Minimum 6 characters (${password.length}/6)`}
+                </p>
+              )}
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
-                <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">Remember me</span>
+            {/* Remember me & Forgot password */}
+            <div className="flex items-center justify-between mb-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-[#DC143C] border-gray-300 rounded focus:ring-[#DC143C]/20"
+                />
+                <span className="text-sm text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot" className="text-sm font-bold text-primary hover:opacity-70 transition-opacity">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary font-medium transition-colors"
+              >
                 Forgot Password?
               </Link>
             </div>
 
+            {/* Login Button */}
             <button
-              type="submit"
-              className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-xl shadow-primary/25 hover:brightness-110 active:scale-[0.98] transition-all"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full py-3.5 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign In
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <LogIn size={18} />
+                </>
+              )}
             </button>
-          </form>
 
-          <p className="text-center mt-12 text-sm text-gray-400">
-            Don't have an account?{' '}
-            <Link to="/create-account" className="text-primary font-bold hover:underline">Create Account</Link>
-          </p>
+            {/* Sign Up Link */}
+            <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link to="/create-account" className="text-primary font-medium hover:underline">
+                  Create Account
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* RIGHT SIDE - Light Contrast Section for Black Logo visibility */}
-      <div className="hidden md:flex md:w-1/2 lg:w-7/12 bg-gray-50 relative overflow-hidden flex-col justify-center items-center p-12 border-l border-gray-100">
+      {/* RIGHT SIDE: Features */}
+      <div className="hidden relative overflow-hidden md:flex md:w-1/2 bg-gray-50 flex-col justify-center items-center p-12">
 
-        {/* Background subtle pattern - primary color ki halki si jhalak */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-[0.35] rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary opacity-[0.3] rounded-full blur-[80px]"></div>
+        <div className="absolute -top-20 -right-32 w-96 h-96 bg-primary opacity-[0.25] z-10 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary opacity-[0.2] z-10 rounded-full blur-[80px]"></div>
 
-        <div className="relative z-10 w-full max-w-md text-center">
-
-          {/* LOGO - Now perfectly visible on light background */}
-          <div className="flex flex-col items-center gap-4 mb-16 transition-transform hover:scale-105 duration-500">
-            <img
-              src="dukaan-ease-logo.png"
-              alt="Dukaan Ease Logo"
-              width={'220'}
-              className="drop-shadow-sm"
-            />
+        <div className="w-full max-w-md">
+          {/* Simple Illustration */}
+          <div className="mb-12">
+            <img src="dukaan-ease-logo.png" alt="" className="w-52 mx-auto" />
+            <h2 className="text-2xl font-semibold mt-10 text-gray-900 text-center mb-3">
+              Start Your Digital Shop
+            </h2>
+            <p className="text-gray-600 text-center">
+              Join thousands of merchants using DukaanEase to manage their business efficiently.
+            </p>
           </div>
 
-          {/* FEATURE CARDS - Styled with Primary color on Light BG */}
-          <div className="grid grid-cols-2 gap-4 mb-12">
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm group hover:border-primary hover:shadow-md transition-all duration-300">
-              <BarChart3 className="text-primary mb-3 mx-auto" size={32} />
-              <p className="text-gray-900 font-bold text-sm uppercase tracking-widest">Analytics</p>
+          {/* Simple Features */}
+          <div className="space-y-6 relative z-30">
+            <div className="flex items-start gap-4 bg-white border border-primary/30 p-4 rounded-lg shadow-sm">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Store className="text-primary" size={20} />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Easy Setup</h4>
+                <p className="text-sm text-gray-600">Get started in minutes with our simple setup process.</p>
+              </div>
             </div>
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm group hover:border-primary hover:shadow-md transition-all duration-300">
-              <ShoppingBag className="text-primary mb-3 mx-auto" size={32} />
-              <p className="text-gray-900 font-bold text-sm uppercase tracking-widest">Inventory</p>
+
+            <div className="flex items-start gap-4 bg-white border border-primary/30 p-4 rounded-lg shadow-sm">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <CreditCard className="text-primary" size={20} />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Sales Tracking</h4>
+                <p className="text-sm text-gray-600">Track sales, inventory, and customer data in real-time.</p>
+              </div>
             </div>
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm group hover:border-primary hover:shadow-md transition-all duration-300">
-              <LayoutDashboard className="text-primary mb-3 mx-auto" size={32} />
-              <p className="text-gray-900 font-bold text-sm uppercase tracking-widest">Dashboard</p>
-            </div>
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm group hover:border-primary hover:shadow-md transition-all duration-300">
-              <ShieldCheck className="text-primary mb-3 mx-auto" size={32} />
-              <p className="text-gray-900 font-bold text-sm uppercase tracking-widest">Security</p>
+
+            <div className="flex items-start gap-4 bg-white border border-primary/30 p-4 rounded-lg shadow-sm">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="text-primary text-base font-bold">24/7</div>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Always Available</h4>
+                <p className="text-sm text-gray-600">Access your shop data anytime, anywhere.</p>
+              </div>
             </div>
           </div>
 
-          <h3 className="text-2xl font-semibold text-gray-900 mb-2">Modern Shop Management</h3>
-          <p className="text-gray-500 text-sm leading-relaxed px-8">
-            The ultimate tool to track your sales, manage stock, and grow your business with zero effort.
-          </p>
-        </div>
-
-        {/* Minimal Footer */}
-        <div className="absolute bottom-10 flex items-center gap-2 text-zinc-400 font-bold text-[10px] tracking-[0.2em] uppercase">
-          <div className="w-12 h-[1px] bg-zinc-400"></div>
-          Version 1.0.0
-          <div className="w-12 h-[1px] bg-zinc-400"></div>
+          {/* Simple Stats */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="flex items-center justify-around">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">2,000+</div>
+                <div className="text-sm text-gray-600">Merchants</div>
+              </div>
+              <div className="h-8 w-px bg-gray-300"></div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">99%</div>
+                <div className="text-sm text-gray-600">Satisfaction</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
     </div>
   );
 };

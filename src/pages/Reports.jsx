@@ -138,18 +138,18 @@ const Reports = () => {
   ];
 
   return (
-    <div className="space-y-6 min-h-screen p-4 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden">
+    <div className="space-y-6 min-h-screen p-4 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Analytics & Reports</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Analytics & Reports</h1>
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">Detailed business insights and analytics</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => exportReport('pdf')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900/50 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm dark:backdrop-blur-md text-sm whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900/50 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm dark:backdrop-blur-md text-sm whitespace-nowrap"
           >
             <Download size={18} />
             <span className="hidden sm:inline">Export PDF</span>
@@ -157,7 +157,7 @@ const Reports = () => {
           </button>
           <button
             onClick={() => exportReport('excel')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-900/30 text-sm whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-900/30 text-sm whitespace-nowrap"
           >
             <Download size={18} />
             <span className="hidden sm:inline">Export Excel</span>

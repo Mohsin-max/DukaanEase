@@ -443,7 +443,7 @@ const Inventory = () => {
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Stock Management</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Stock Management</h1>
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">Manage your inventory with ease</p>
         </div>
         <div className="flex flex-wrap gap-3">

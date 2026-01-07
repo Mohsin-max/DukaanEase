@@ -1,5 +1,5 @@
 // src/components/Layout/Sidebar.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -13,20 +13,33 @@ import {
   LogOut,
   Award,
   Layers,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import { getUserInfo } from '../../utils/user';
 
 const Sidebar = ({ onLogout }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [user, setUser] = useState('');
+
+  useEffect(() => {
+
+    let user = getUserInfo();
+    if (user) {
+      setUser(user);
+    }
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth >= 768) {
-        setIsSidebarOpen(true);
-      } else {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+
+      if (mobile) {
         setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
       }
     };
 
@@ -38,86 +51,122 @@ const Sidebar = ({ onLogout }) => {
 
   const handleLogout = () => {
     onLogout();
-    navigate('/');
+    navigate('/login');
   };
 
   const navItems = [
     { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { path: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
     { path: '/sales', icon: <ShoppingCart size={20} />, label: 'Sales' },
-    { path: '/brands', icon: <Award size={20} />, label: 'Brands' }, // Award icon for Brand identity
-    { path: '/categories', icon: <Layers size={20} />, label: 'Categories' }, // Layers for grouping
+    { path: '/brands', icon: <Award size={20} />, label: 'Brands' },
+    { path: '/categories', icon: <Layers size={20} />, label: 'Categories' },
     { path: '/udhaar', icon: <CreditCard size={20} />, label: 'Udhaar' },
     { path: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' },
     { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
+
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      {/* Sidebar for desktop */}
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+      {/* SIDEBAR */}
       {isSidebarOpen && (
-        <div className={`${isMobile ? 'fixed inset-0 z-50' : 'relative'} w-64 bg-white dark:bg-gray-900/50 backdrop-blur-md border-r border-gray-200 dark:border-gray-700/50`}>
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700/50">
-            <div className="flex flex-col items-center space-y-4">
-              <img src="dukaan-ease-logo.png" alt="" width={'160'} className='bg-white py-1 px-2 rounded-md' />
-              <h2 className="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">My Kirana Store</h2>
-              {isMobile && (
-                <button
-                  onClick={() => setIsSidebarOpen(false)}
-                  className="ml-auto p-2 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
-                >
-                  <X size={20} className="text-gray-500 dark:text-gray-400" />
-                </button>
-              )}
-            </div>
+        <div
+          className={`${isMobile ? 'fixed inset-0 z-50' : 'relative'}
+          ${isCollapsed ? 'w-20' : 'w-64'}
+          bg-white dark:bg-gray-900/50 backdrop-blur-md
+          border-r border-gray-200 dark:border-gray-700/50
+          transition-all duration-300`}
+        >
+          {/* Header */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
+            {!isCollapsed && (
+              <div className="flex flex-col items-center space-y-2 w-full">
+                <img
+                  src="dukaan-ease-logo.png"
+                  alt=""
+                  width={150}
+                  className="bg-white py-1 px-2 rounded-md"
+                />
+                <h2 className="font-semibold text-md text-center text-gray-950 dark:text-white tracking-tight">
+                  {user?.shopName}
+                </h2>
+              </div>
+            )}
+
+            {isCollapsed && (
+              <img
+                src="dukaan-ease-logo-icon.png"
+                alt=""
+                width={40}
+                className="mx-auto bg-white p-1 rounded-md"
+              />
+            )}
+
+            {/* Collapse Toggle */}
+            {!isMobile && (
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="absolute -right-3 top-6 bg-white dark:text-white text-gray-950 dark:bg-gray-800 border border-gray-500 dark:border-gray-950 rounded-full p-1 shadow"
+              >
+                {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+              </button>
+            )}
+
+            {isMobile && (
+              <button onClick={() => setIsSidebarOpen(false)}>
+                <X size={20} />
+              </button>
+            )}
           </div>
 
-          <nav className="p-4 space-y-2">
+          {/* NAV */}
+          <nav className="p-3 space-y-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-lg transition-all hover:bg-[#FF123C15] dark:hover:bg-gray-800/50 hover:border-l-4 hover:border-primary dark:hover:border-blue-500/50 ${isActive
-                    ? 'bg-[#FF123C15] dark:bg-gray-800/30 text-primary dark:text-blue-400 border-l-4 border-primary dark:border-blue-500/50'
-                    : 'text-gray-700 dark:text-gray-300'
+                  `flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'
+                  } px-4 py-3 rounded-lg transition-all
+                  ${isActive
+                    ? 'bg-[#FF123C15] text-primary border-l-4 border-primary'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-[#FF123C15]'
                   }`
                 }
               >
                 {item.icon}
-                <span>{item.label}</span>
+                {!isCollapsed && <span>{item.label}</span>}
               </NavLink>
             ))}
           </nav>
 
-          <div className="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-gray-700/50">
+          {/* LOGOUT */}
+          <div className="absolute bottom-0 w-full p-4 border-t">
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-3 px-4 py-3 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg w-full transition-all hover:border-l-4 hover:border-red-400 dark:hover:border-red-500/50"
+              className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'
+                } px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg w-full`}
             >
               <LogOut size={20} />
-              <span>Logout</span>
+              {!isCollapsed && <span>Logout</span>}
             </button>
           </div>
         </div>
       )}
 
-      {/* Mobile header */}
+      {/* MOBILE HEADER */}
       {isMobile && !isSidebarOpen && (
-        <div className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900/50 backdrop-blur-md shadow-sm z-40 border-b border-gray-200 dark:border-gray-700/50">
+        <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b">
           <div className="flex items-center justify-between p-4">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
-            >
-              <Menu size={24} className="text-gray-600 dark:text-gray-300" />
+            <button onClick={() => setIsSidebarOpen(true)}>
+              <Menu size={24} />
             </button>
-            <h1 className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">DukaanEase</h1>
-            <div className="w-10"></div>
+            <h1 className="font-bold">DukaanEase</h1>
+            <div className="w-6" />
           </div>
         </div>
       )}
 
-      {/* Main content */}
+      {/* CONTENT */}
       <div className={`flex-1 overflow-auto ${isMobile ? 'pt-16' : ''}`}>
         <div className="p-4 md:p-6 lg:p-8">
           <Outlet />

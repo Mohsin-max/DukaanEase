@@ -106,7 +106,7 @@ const Categories = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-xl px-4 md:px-6 py-3">
+      <div className="sticky top-0 z-10 bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-xl px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Categories Management</h1>
@@ -130,7 +130,7 @@ const Categories = () => {
       </div>
 
       {/* Main Content */}
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-4 space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-gradient-to-br from-blue-100/50 to-blue-50 dark:from-blue-900/20 dark:to-blue-700/10 backdrop-blur-sm border border-blue-300/50 dark:border-blue-400/30 rounded-xl p-4 md:p-5">
@@ -142,9 +142,6 @@ const Categories = () => {
               <div className="p-2.5 rounded-lg bg-blue-200/80 dark:bg-blue-900/30 border border-blue-400/40">
                 <Layers size={20} className="text-blue-600 dark:text-blue-400" />
               </div>
-            </div>
-            <div className="text-xs md:text-sm text-emerald-600 dark:text-emerald-400">
-              +2 this month
             </div>
           </div>
 
@@ -201,7 +198,7 @@ const Categories = () => {
         </div>
 
         {/* Categories Table */}
-        <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 p-4 md:p-5">
+        <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 p-4 md:p-5 backdrop-blur-md">
           {/* Table Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
             <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">All Categories</h2>
@@ -223,7 +220,7 @@ const Categories = () => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 rounded-lg border border-gray-200 dark:bg-gray-600 bg-gray-400 dark:border-gray-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
@@ -295,9 +292,6 @@ const Categories = () => {
                           title="Delete"
                         >
                           <Trash2 size={16} className="text-rose-600 dark:text-rose-400" />
-                        </button>
-                        <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                          <MoreVertical size={16} className="text-gray-500 dark:text-gray-400" />
                         </button>
                       </div>
                     </td>

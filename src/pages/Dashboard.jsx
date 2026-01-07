@@ -1,9 +1,14 @@
 // src/pages/Dashboard.jsx
-import React, { useState } from 'react';
-import { IndianRupee, TrendingUp, AlertCircle, DollarSign, ShoppingBag, Users, Package, CreditCard, Calendar, Clock, ArrowUpRight, ChevronRight, MoreVertical, Download, Filter, Plus, X, Printer } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { TrendingUp, AlertCircle, DollarSign, ShoppingBag, ChartNoAxesCombined, Package, CreditCard, Calendar, ArrowUpRight, ChevronRight, MoreVertical, Download, Plus, X, Printer } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { formatCurrency } from '../utils/currencyUtils';
+import { getUserInfo } from '../utils/user';
 
-const Dashboard = ({ shopName }) => {
+const Dashboard = () => {
+
+  const userInfo = getUserInfo(); // Ensure user info is loaded
+
   const [stats] = useState({
     todaySales: 15250,
     totalCredit: 8450,
@@ -98,16 +103,16 @@ const Dashboard = ({ shopName }) => {
   const cards = [
     {
       title: "Today's Sales",
-      value: `${stats.todaySales.toLocaleString()} Rs`,
-      icon: 'Rs',
+      value: `${formatCurrency(stats.todaySales)}`,
+      icon: <ChartNoAxesCombined size={20} />,
       bgColor: 'bg-gradient-to-br from-blue-100/50 to-blue-50 dark:from-blue-900/20 dark:to-blue-700/10 backdrop-blur-sm border border-blue-300/50 dark:border-blue-400/30 shadow-lg shadow-blue-500/10 ring-1 ring-blue-400/20 dark:ring-blue-400/10',
       iconColor: 'text-blue-600 dark:text-blue-400',
       iconBgColor: 'px-2.5 rounded-lg bg-blue-200/80 dark:bg-blue-900/30 border border-blue-400/40 shadow-[0_0_15px_rgba(59,130,246,0.4)]',
     },
     {
       title: 'Udhaar Amount',
-      value: `${stats.totalCredit.toLocaleString()} Rs`,
-      icon: <DollarSign size={20} />,
+      value: `${formatCurrency(stats.totalCredit)}`,
+      icon: <CreditCard size={20} />,
       bgColor: 'bg-gradient-to-br from-amber-100/50 to-amber-50 dark:from-amber-900/20 dark:to-amber-700/10 backdrop-blur-sm border border-amber-300/50 dark:border-amber-400/30 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/20 dark:ring-amber-400/10',
       iconColor: 'text-amber-600 dark:text-amber-400',
       iconBgColor: 'p-2.5 rounded-lg bg-amber-200/80 dark:bg-amber-900/30 border border-amber-400/40 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
@@ -123,7 +128,7 @@ const Dashboard = ({ shopName }) => {
     },
     {
       title: 'Profit',
-      value: `${stats.profit.toLocaleString()} Rs`,
+      value: `${formatCurrency(stats.profit)}`,
       icon: <TrendingUp size={20} />,
       bgColor: 'bg-gradient-to-br from-emerald-100/50 to-emerald-50 dark:from-emerald-900/20 dark:to-emerald-700/10 backdrop-blur-sm border border-emerald-300/50 dark:border-emerald-400/30 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-400/20 dark:ring-emerald-400/10',
       iconColor: 'text-emerald-600 dark:text-emerald-400',
@@ -131,18 +136,6 @@ const Dashboard = ({ shopName }) => {
       iconBgColor: 'p-2.5 rounded-lg bg-green-200/80 dark:bg-green-900/30 border border-green-400/40 shadow-[0_0_15px_rgba(16,185,129,0.4)]',
     },
   ];
-
-  const quickStats = [
-    { label: 'Customers', value: stats.totalCustomers, icon: <Users size={18} />, color: 'text-blue-600 dark:text-blue-400' },
-    { label: 'Products', value: stats.totalProducts, icon: <Package size={18} />, color: 'text-violet-600 dark:text-violet-400' },
-    { label: 'Monthly Sales', value: `${stats.monthlySales.toLocaleString()} Rs`, icon: <CreditCard size={18} />, color: 'text-emerald-600 dark:text-emerald-400' },
-    { label: 'Transactions', value: stats.dailyTransactions, icon: <ShoppingBag size={18} />, color: 'text-amber-600 dark:text-amber-400' },
-  ];
-
-  const currentTime = new Date().toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const currentDate = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -162,12 +155,12 @@ const Dashboard = ({ shopName }) => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-xl px-4 md:px-6 py-3">
+      <div className="sticky top-0 z-10 bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-xl px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Dashboard</h1>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-1 text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Welcome back, Saleem Ali</span>
+              <span className="text-gray-600 dark:text-gray-400">Welcome back, {userInfo?.fullName || 'User'}</span>
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap">
                 <Calendar size={12} />
                 <span>{currentDate}</span>
@@ -178,7 +171,7 @@ const Dashboard = ({ shopName }) => {
             <div className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs md:text-sm">
               <div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-400">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                Open • 09:00 - 21:00
+                Open • {userInfo?.openTime || ''} - {userInfo?.closeTime || ''}
               </div>
             </div>
             <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -189,7 +182,7 @@ const Dashboard = ({ shopName }) => {
       </div>
 
       {/* Main Content */}
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-4 space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((card, index) => (
@@ -276,7 +269,7 @@ const Dashboard = ({ shopName }) => {
                       {/* <td className="py-3 px-4 text-xs md:text-sm font-medium text-gray-900 dark:text-white">{transaction.customerName}</td> */}
                       <td className="py-3 px-4 text-xs md:text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex items-center gap-1">
-                          {transaction.amount.toLocaleString()} Rs
+                          {formatCurrency(transaction.amount)}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-xs md:text-sm">{getPaymentBadge(transaction.paymentType)}</td>
@@ -320,7 +313,7 @@ const Dashboard = ({ shopName }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">{product.revenue.toLocaleString()} Rs</div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">{formatCurrency(product.revenue)}</div>
                     <div className="text-xs md:text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1 justify-end">
                       <TrendingUp size={12} />
                       +{product.trend}%
@@ -425,7 +418,7 @@ const Dashboard = ({ shopName }) => {
                     ticks={[0, 20000, 40000, 60000, 80000, 100000]}
                   />
                   <Tooltip
-                    formatter={(value) => [`${value.toLocaleString()}`, 'Sales']}
+                    formatter={(value) => [`${formatCurrency(value)}`, 'Sales']}
                     labelFormatter={(label) => `Day: ${label}`}
                     contentStyle={{
                       borderRadius: '8px',
@@ -462,7 +455,7 @@ const Dashboard = ({ shopName }) => {
                 <div key={index}>
                   <div className="flex justify-between mb-2">
                     <span className="font-medium text-gray-900 dark:text-white">{item.method}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{item.amount}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(item.amount)}</span>
                   </div>
                   <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
                     <div
@@ -543,10 +536,10 @@ const Dashboard = ({ shopName }) => {
                   </div>
                   <div className="text-xs md:text-sm">
                     <span className={`px-2 py-1 rounded-md font-medium ${invoiceDetails[selectedInvoice].paymentType === 'Cash'
-                        ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
-                        : invoiceDetails[selectedInvoice].paymentType === 'Online'
-                          ? 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20'
-                          : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20'
+                      ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
+                      : invoiceDetails[selectedInvoice].paymentType === 'Online'
+                        ? 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20'
+                        : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20'
                       }`}>
                       {invoiceDetails[selectedInvoice].paymentType}
                     </span>
